@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ app_name }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: system-ui, sans-serif; background: #0b0f14; color: #d7dee5; margin: 0; padding: 2rem; }
+        h1 { color: #4fd1c5; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid #1f2933; font-size: 0.9rem; }
+        th { color: #8896a5; text-transform: uppercase; font-size: 0.75rem; }
+        .sev-critical { color: #ff6b6b; font-weight: 600; }
+        .sev-high { color: #f6ad55; font-weight: 600; }
+        .sev-medium { color: #f6e05e; }
+        .sev-low { color: #68d391; }
+    </style>
+</head>
+<body>
+    <h1>{{ app_name }} — Threat Log (Server-Rendered)</h1>
+    <p>This is a lightweight no-JS fallback view. The full dashboard should use the JSON API
+       (<code>/api/v1/threats</code>) or the WebSocket/SSE stream for live updates.</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Time (UTC)</th>
+                <th>Severity</th>
+                <th>Src</th>
+                <th>Dst</th>
+                <th>Protocol</th>
+                <th>Score</th>
+                <th>Sensor</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for t in threats %}
+            <tr>
+                <td>{{ t.timestamp }}</td>
+                <td class="sev-{{ t.severity }}">{{ t.severity }}</td>
+                <td>{{ t.src_ip }}:{{ t.src_port }}</td>
+                <td>{{ t.dst_ip }}:{{ t.dst_port }}</td>
+                <td>{{ t.protocol }}</td>
+                <td>{{ "%.4f"|format(t.score) }}</td>
+                <td>{{ t.sensor_id }}</td>
+            </tr>
+        {% else %}
+            <tr><td colspan="7">No threats recorded yet.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
