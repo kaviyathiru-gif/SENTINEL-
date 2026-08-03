@@ -31,10 +31,10 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.config import get_settings
-from app.database import persistence
-from app.model import inference_engine
-from app.schemas import (
+from config import get_settings
+from database import persistence
+from model import inference_engine
+from schemas import (
     BatchFlowIngest,
     FlowIngest,
     MLMetrics,
