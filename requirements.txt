@@ -10,3 +10,4 @@ python-multipart==0.0.9
 torch>=2.2.0
 firebase-admin==6.5.0
 aiosqlite==0.20.0
+gunicorn
