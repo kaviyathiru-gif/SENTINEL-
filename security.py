@@ -18,8 +18,8 @@ from passlib.context import CryptContext
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
-from app.config import get_settings
-from app.schemas import TokenPayload
+from config import get_settings
+from schemas import TokenPayload
 
 settings = get_settings()
 
