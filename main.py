@@ -293,7 +293,7 @@ async def ws_threats(websocket: WebSocket):
         await websocket.close(code=4401)
         return
     try:
-        from app.security import decode_access_token
+        from security import decode_access_token
         decode_access_token(token)
     except HTTPException:
         await websocket.close(code=4401)
