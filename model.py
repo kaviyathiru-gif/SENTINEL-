@@ -22,7 +22,7 @@ from typing import List, Tuple
 import torch
 import torch.nn as nn
 
-from app.config import get_settings
+from config import get_settings
 
 logger = logging.getLogger("sentinel.model")
 settings = get_settings()
