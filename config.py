@@ -14,7 +14,6 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     # --- General ---
-    model_config = SettingsConfigDict(protected_namespaces=())
     APP_NAME: str = "Sentinel ML-IDS Backend"
     ENVIRONMENT: Literal["development", "staging", "production"] = "development"
     DEBUG: bool = False
@@ -55,11 +54,12 @@ class Settings(BaseSettings):
     SYNC_RETRY_SECONDS: int = 15  # how often to retry flushing cached data to Firestore
 
     model_config = SettingsConfigDict(
-        env_file=".env",
-        env_file_encoding="utf-8",
-        case_sensitive=True,
-        extra="ignore",
-    )
+    env_file=".env",
+    env_file_encoding="utf-8",
+    case_sensitive=True,
+    extra="ignore",
+    protected_namespaces=(),
+)
 
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
