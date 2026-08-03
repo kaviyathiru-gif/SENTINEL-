@@ -16,8 +16,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import torch  # noqa: E402
 
-from app.config import get_settings  # noqa: E402
-from app.model import NeuralNetwork  # noqa: E402
+from config import get_settings  # noqa: E402
+from model import NeuralNetwork  # noqa: E402
 
 
 def main() -> None:
