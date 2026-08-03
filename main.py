@@ -67,7 +67,7 @@ templates = Jinja2Templates(directory="app/templates")
 # Demo user store — replace with a real database-backed user table in production.
 # Password below is a bcrypt hash; never store plaintext passwords.
 # ---------------------------------------------------------------------------
-from app.security import hash_password  # noqa: E402
+from security import hash_password  # noqa: E402
 
 _DEMO_USERS = {
     "admin": {"password_hash": hash_password("change-this-password!"), "scope": "admin"},
