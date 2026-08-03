@@ -14,6 +14,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     # --- General ---
+    model_config = SettingsConfigDict(protected_namespaces=())
     APP_NAME: str = "Sentinel ML-IDS Backend"
     ENVIRONMENT: Literal["development", "staging", "production"] = "development"
     DEBUG: bool = False
