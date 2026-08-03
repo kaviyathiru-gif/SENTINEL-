@@ -20,8 +20,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Deque, Dict, List, Optional
 
-from app.config import get_settings
-from app.schemas import ThreatEvent
+from config import get_settings
+from schemas import ThreatEvent
 
 logger = logging.getLogger("sentinel.database")
 settings = get_settings()
