@@ -343,6 +343,10 @@ async def dashboard(request: Request):
         name="dashboard.html",
         context={"threats": recent, "app_name": settings.APP_NAME},
     )
+  python
+@app.get("/")
+async def root():
+    return {"status": "Sentinel API is running"}
 
 
 @app.get("/healthz", tags=["system"])
