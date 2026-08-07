@@ -2,51 +2,1031 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{ app_name }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sentinel: ML-Based Network Intrusion Detection System">
+    <title>Sentinel - Network Intrusion Detection</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
-        body { font-family: system-ui, sans-serif; background: #0b0f14; color: #d7dee5; margin: 0; padding: 2rem; }
-        h1 { color: #4fd1c5; }
-        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-        th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid #1f2933; font-size: 0.9rem; }
-        th { color: #8896a5; text-transform: uppercase; font-size: 0.75rem; }
-        .sev-critical { color: #ff6b6b; font-weight: 600; }
-        .sev-high { color: #f6ad55; font-weight: 600; }
-        .sev-medium { color: #f6e05e; }
-        .sev-low { color: #68d391; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0e27;
+            --bg-secondary: #141829;
+            --bg-tertiary: #1a1f3a;
+            --accent: #00d4ff;
+            --accent-hover: #00b8d4;
+            --text-primary: #e4e7eb;
+            --text-secondary: #a1a7b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --critical: #dc2626;
+            --border: #2d3748;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header */
+        header {
+            background: rgba(20, 24, 41, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 0;
+            margin-bottom: 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .logo span {
+            font-size: 1.8rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(26, 31, 58, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 212, 255, 0.1);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .stat-change {
+            font-size: 0.85rem;
+            color: var(--success);
+            margin-top: 0.5rem;
+        }
+
+        /* Controls */
+        .controls-section {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: 1px solid var(--border);
+            background: rgba(26, 31, 58, 0.6);
+            color: var(--text-primary);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .btn.active {
+            background: var(--accent);
+            color: var(--bg-primary);
+            border-color: var(--accent);
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg-primary);
+            border-color: var(--accent);
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+
+        /* Search/Input */
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(26, 31, 58, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .search-box input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+
+        /* Table */
+        .table-container {
+            background: rgba(26, 31, 58, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: rgba(20, 24, 41, 0.8);
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        td {
+            padding: 1rem 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        /* Severity Badges */
+        .severity-badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .severity-critical {
+            background: rgba(220, 38, 38, 0.2);
+            color: #fca5a5;
+        }
+
+        .severity-high {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fecaca;
+        }
+
+        .severity-medium {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fcd34d;
+        }
+
+        .severity-low {
+            background: rgba(16, 185, 129, 0.2);
+            color: #86efac;
+        }
+
+        /* IP Columns */
+        .ip-address {
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: var(--accent);
+        }
+
+        .timestamp {
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border);
+            margin-top: 3rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header-content {
+                padding: 0 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+
+            .stat-value {
+                font-size: 2rem;
+            }
+
+            .controls-section {
+                flex-direction: column;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            .filter-group {
+                width: 100%;
+            }
+
+            th, td {
+                padding: 0.75rem;
+                font-size: 0.85rem;
+            }
+
+            .ip-address {
+                font-size: 0.75rem;
+            }
+
+            table {
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Charts Section */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .chart-card {
+            background: rgba(26, 31, 58, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .chart-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 8px 16px rgba(0, 212, 255, 0.1);
+        }
+
+        .chart-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        .chart-container canvas {
+            max-height: 300px !important;
+        }
+
+        .chart-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .chart-stat-item {
+            background: rgba(0, 212, 255, 0.05);
+            padding: 0.75rem;
+            border-radius: 4px;
+            text-align: center;
+            border-left: 3px solid var(--accent);
+        }
+
+        .chart-stat-value {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .chart-stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-top: 0.25rem;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
     </style>
 </head>
 <body>
-    <h1>{{ app_name }} — Threat Log (Server-Rendered)</h1>
-    <p>This is a lightweight no-JS fallback view. The full dashboard should use the JSON API
-       (<code>/api/v1/threats</code>) or the WebSocket/SSE stream for live updates.</p>
-    <table>
-        <thead>
-            <tr>
-                <th>Time (UTC)</th>
-                <th>Severity</th>
-                <th>Src</th>
-                <th>Dst</th>
-                <th>Protocol</th>
-                <th>Score</th>
-                <th>Sensor</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for t in threats %}
-            <tr>
-                <td>{{ t.timestamp }}</td>
-                <td class="sev-{{ t.severity }}">{{ t.severity }}</td>
-                <td>{{ t.src_ip }}:{{ t.src_port }}</td>
-                <td>{{ t.dst_ip }}:{{ t.dst_port }}</td>
-                <td>{{ t.protocol }}</td>
-                <td>{{ "%.4f"|format(t.score) }}</td>
-                <td>{{ t.sensor_id }}</td>
-            </tr>
-        {% else %}
-            <tr><td colspan="7">No threats recorded yet.</td></tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <span>🛡️</span>
+                <div>
+                    <div>Sentinel</div>
+                    <div style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 400;">Network Intrusion Detection</div>
+                </div>
+            </div>
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span id="status-text">System Online</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Statistics Section -->
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Threats</div>
+                <div class="stat-value" id="stat-total">0</div>
+                <div class="stat-change">Last 24h</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Critical</div>
+                <div class="stat-value" id="stat-critical" style="color: #fca5a5;">0</div>
+                <div class="stat-change" style="color: var(--critical);">Requires Action</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">High Risk</div>
+                <div class="stat-value" id="stat-high" style="color: #fecaca;">0</div>
+                <div class="stat-change" style="color: var(--danger);">Monitor Closely</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Medium Risk</div>
+                <div class="stat-value" id="stat-medium" style="color: #fcd34d;">0</div>
+                <div class="stat-change" style="color: var(--warning);">Review Needed</div>
+            </div>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="charts-grid">
+            <!-- Severity Distribution Pie Chart -->
+            <div class="chart-card">
+                <div class="chart-title">📊 Threat Severity Distribution</div>
+                <div class="chart-container">
+                    <canvas id="severityPieChart"></canvas>
+                </div>
+                <div class="chart-stats">
+                    <div class="chart-stat-item">
+                        <div class="chart-stat-value" id="chart-critical">0</div>
+                        <div class="chart-stat-label">Critical</div>
+                    </div>
+                    <div class="chart-stat-item">
+                        <div class="chart-stat-value" id="chart-high">0</div>
+                        <div class="chart-stat-label">High</div>
+                    </div>
+                    <div class="chart-stat-item">
+                        <div class="chart-stat-value" id="chart-medium">0</div>
+                        <div class="chart-stat-label">Medium</div>
+                    </div>
+                    <div class="chart-stat-item">
+                        <div class="chart-stat-value" id="chart-low">0</div>
+                        <div class="chart-stat-label">Low</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Protocol Distribution Bar Chart -->
+            <div class="chart-card">
+                <div class="chart-title">🔌 Protocol Distribution</div>
+                <div class="chart-container">
+                    <canvas id="protocolBarChart"></canvas>
+                </div>
+            </div>
+
+            <!-- ML Confidence Score Distribution -->
+            <div class="chart-card">
+                <div class="chart-title">🤖 ML Confidence Scores</div>
+                <div class="chart-container">
+                    <canvas id="mlScoreChart"></canvas>
+                </div>
+                <div class="chart-stats">
+                    <div class="chart-stat-item">
+                        <div class="chart-stat-value" id="avg-score">0%</div>
+                        <div class="chart-stat-label">Avg Score</div>
+                    </div>
+                    <div class="chart-stat-item">
+                        <div class="chart-stat-value" id="max-score">0%</div>
+                        <div class="chart-stat-label">Max Score</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Threats Timeline Chart (Full Width) -->
+            <div class="chart-card full-width">
+                <div class="chart-title">📈 Threat Timeline (Last 8 Threats)</div>
+                <div class="chart-container" style="height: 350px;">
+                    <canvas id="timelineChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Source IPs Distribution (Doughnut Chart) -->
+            <div class="chart-card">
+                <div class="chart-title">🌐 Top Source IPs</div>
+                <div class="chart-container">
+                    <canvas id="sourceIpChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Destination IPs Distribution -->
+            <div class="chart-card">
+                <div class="chart-title">🎯 Top Destination IPs</div>
+                <div class="chart-container">
+                    <canvas id="destIpChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Threat Status Breakdown -->
+            <div class="chart-card">
+                <div class="chart-title">✅ Threat Status Breakdown</div>
+                <div class="chart-container">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Controls Section -->
+        <section class="controls-section">
+            <div class="filter-group">
+                <button class="btn active" onclick="filterBySeverity('all')">All Threats</button>
+                <button class="btn" onclick="filterBySeverity('critical')">🔴 Critical</button>
+                <button class="btn" onclick="filterBySeverity('high')">🟠 High</button>
+                <button class="btn" onclick="filterBySeverity('medium')">🟡 Medium</button>
+                <button class="btn" onclick="filterBySeverity('low')">🟢 Low</button>
+            </div>
+            <button class="btn btn-primary" onclick="loadSampleData()">↻ Refresh</button>
+        </section>
+
+        <!-- Threats Table -->
+        <section class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Timestamp (UTC)</th>
+                        <th>Severity</th>
+                        <th>Source IP</th>
+                        <th>Destination IP</th>
+                        <th>Protocol</th>
+                        <th>ML Score</th>
+                    </tr>
+                </thead>
+                <tbody id="threats-table-body">
+                    <tr class="empty-state">
+                        <td colspan="6">Loading threat data...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <footer>
+        <p>Sentinel © 2024 | ML-Based Network Intrusion Detection System | <a href="https://github.com" style="color: var(--accent); text-decoration: none;">GitHub</a> | <a href="https://render.com" style="color: var(--accent); text-decoration: none;">Render</a></p>
+    </footer>
+
+    <script>
+        let allThreats = [];
+        let currentFilter = 'all';
+        let chartInstances = {};
+
+        const sampleThreats = [
+            { timestamp: '2024-01-15T22:45:32Z', severity: 'critical', src_ip: '192.168.1.105', src_port: 54321, dst_ip: '203.0.113.42', dst_port: 443, protocol: 'TCP', score: 0.9876, status: 'new' },
+            { timestamp: '2024-01-15T22:43:18Z', severity: 'high', src_ip: '10.0.0.42', src_port: 49152, dst_ip: '198.51.100.89', dst_port: 22, protocol: 'TCP', score: 0.8754, status: 'new' },
+            { timestamp: '2024-01-15T22:41:05Z', severity: 'medium', src_ip: '172.16.0.88', src_port: 12345, dst_ip: '192.0.2.15', dst_port: 80, protocol: 'TCP', score: 0.6432, status: 'reviewed' },
+            { timestamp: '2024-01-15T22:38:47Z', severity: 'low', src_ip: '192.168.1.200', src_port: 58234, dst_ip: '8.8.8.8', dst_port: 53, protocol: 'UDP', score: 0.3245, status: 'resolved' },
+            { timestamp: '2024-01-15T22:36:20Z', severity: 'critical', src_ip: '203.0.113.99', src_port: 65432, dst_ip: '10.0.0.1', dst_port: 3306, protocol: 'TCP', score: 0.9543, status: 'new' },
+            { timestamp: '2024-01-15T22:33:55Z', severity: 'high', src_ip: '192.0.2.100', src_port: 31337, dst_ip: '172.16.0.1', dst_port: 5432, protocol: 'TCP', score: 0.8123, status: 'reviewed' },
+            { timestamp: '2024-01-15T22:31:42Z', severity: 'medium', src_ip: '10.20.30.40', src_port: 44444, dst_ip: '203.0.113.50', dst_port: 443, protocol: 'TCP', score: 0.5876, status: 'new' },
+            { timestamp: '2024-01-15T22:29:18Z', severity: 'low', src_ip: '192.168.100.50', src_port: 12000, dst_ip: '1.1.1.1', dst_port: 53, protocol: 'UDP', score: 0.2134, status: 'resolved' },
+        ];
+
+        // Chart color scheme
+        const chartColors = {
+            critical: '#fca5a5',
+            high: '#fecaca',
+            medium: '#fcd34d',
+            low: '#86efac',
+            accent: '#00d4ff',
+            border: '#2d3748'
+        };
+
+        function loadSampleData() {
+            allThreats = JSON.parse(JSON.stringify(sampleThreats));
+            renderThreats();
+            updateStats();
+            updateCharts();
+        }
+
+        function renderThreats() {
+            const tbody = document.getElementById('threats-table-body');
+            const filtered = currentFilter === 'all' 
+                ? allThreats 
+                : allThreats.filter(t => t.severity === currentFilter);
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No threats recorded for this filter.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(threat => `
+                <tr>
+                    <td><span class="timestamp">${new Date(threat.timestamp).toLocaleString()}</span></td>
+                    <td><span class="severity-badge severity-${threat.severity}">${threat.severity}</span></td>
+                    <td><span class="ip-address">${threat.src_ip}:${threat.src_port}</span></td>
+                    <td><span class="ip-address">${threat.dst_ip}:${threat.dst_port}</span></td>
+                    <td>${threat.protocol}</td>
+                    <td><strong>${(threat.score * 100).toFixed(2)}%</strong></td>
+                </tr>
+            `).join('');
+        }
+
+        function updateStats() {
+            const total = allThreats.length;
+            const critical = allThreats.filter(t => t.severity === 'critical').length;
+            const high = allThreats.filter(t => t.severity === 'high').length;
+            const medium = allThreats.filter(t => t.severity === 'medium').length;
+            const low = allThreats.filter(t => t.severity === 'low').length;
+
+            document.getElementById('stat-total').textContent = total;
+            document.getElementById('stat-critical').textContent = critical;
+            document.getElementById('stat-high').textContent = high;
+            document.getElementById('stat-medium').textContent = medium;
+
+            // Update chart stats
+            document.getElementById('chart-critical').textContent = critical;
+            document.getElementById('chart-high').textContent = high;
+            document.getElementById('chart-medium').textContent = medium;
+            document.getElementById('chart-low').textContent = low;
+        }
+
+        function updateCharts() {
+            updateSeverityPieChart();
+            updateProtocolBarChart();
+            updateMLScoreChart();
+            updateTimelineChart();
+            updateSourceIPChart();
+            updateDestIPChart();
+            updateStatusChart();
+        }
+
+        function destroyChart(chartId) {
+            if (chartInstances[chartId]) {
+                chartInstances[chartId].destroy();
+                delete chartInstances[chartId];
+            }
+        }
+
+        // Severity Pie Chart
+        function updateSeverityPieChart() {
+            destroyChart('severityPie');
+            
+            const severityData = {
+                critical: allThreats.filter(t => t.severity === 'critical').length,
+                high: allThreats.filter(t => t.severity === 'high').length,
+                medium: allThreats.filter(t => t.severity === 'medium').length,
+                low: allThreats.filter(t => t.severity === 'low').length,
+            };
+
+            const ctx = document.getElementById('severityPieChart').getContext('2d');
+            chartInstances['severityPie'] = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Critical', 'High', 'Medium', 'Low'],
+                    datasets: [{
+                        data: [severityData.critical, severityData.high, severityData.medium, severityData.low],
+                        backgroundColor: [chartColors.critical, chartColors.high, chartColors.medium, chartColors.low],
+                        borderColor: chartColors.border,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#e4e7eb', font: { size: 12 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Protocol Distribution Bar Chart
+        function updateProtocolBarChart() {
+            destroyChart('protocolBar');
+
+            const protocolData = {};
+            allThreats.forEach(t => {
+                protocolData[t.protocol] = (protocolData[t.protocol] || 0) + 1;
+            });
+
+            const protocols = Object.keys(protocolData);
+            const counts = Object.values(protocolData);
+
+            const ctx = document.getElementById('protocolBarChart').getContext('2d');
+            chartInstances['protocolBar'] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: protocols,
+                    datasets: [{
+                        label: 'Threat Count',
+                        data: counts,
+                        backgroundColor: chartColors.accent,
+                        borderColor: chartColors.accent,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#e4e7eb' } }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#a1a7b8' },
+                            grid: { color: chartColors.border }
+                        },
+                        y: {
+                            ticks: { color: '#a1a7b8' },
+                            grid: { color: chartColors.border }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ML Score Distribution
+        function updateMLScoreChart() {
+            destroyChart('mlScore');
+
+            const scores = allThreats.map(t => t.score);
+            const avgScore = (scores.reduce((a, b) => a + b, 0) / scores.length * 100).toFixed(1);
+            const maxScore = (Math.max(...scores) * 100).toFixed(1);
+
+            document.getElementById('avg-score').textContent = avgScore + '%';
+            document.getElementById('max-score').textContent = maxScore + '%';
+
+            const ctx = document.getElementById('mlScoreChart').getContext('2d');
+            chartInstances['mlScore'] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: allThreats.map((_, i) => `T${i + 1}`),
+                    datasets: [{
+                        label: 'ML Confidence Score',
+                        data: scores.map(s => s * 100),
+                        backgroundColor: scores.map(s => s > 0.7 ? chartColors.critical : chartColors.accent),
+                        borderColor: chartColors.accent,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'x',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#e4e7eb' } }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { color: '#a1a7b8' },
+                            grid: { color: chartColors.border }
+                        },
+                        x: {
+                            ticks: { color: '#a1a7b8' },
+                            grid: { color: chartColors.border }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Timeline Chart
+        function updateTimelineChart() {
+            destroyChart('timeline');
+
+            const sortedThreats = [...allThreats].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            const timeLabels = sortedThreats.map(t => new Date(t.timestamp).toLocaleTimeString());
+            
+            const ctx = document.getElementById('timelineChart').getContext('2d');
+            chartInstances['timeline'] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: timeLabels,
+                    datasets: [{
+                        label: 'Threat Count Over Time',
+                        data: sortedThreats.map((_, i) => i + 1),
+                        borderColor: chartColors.accent,
+                        backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: chartColors.accent,
+                        pointBorderColor: '#0a0e27',
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#e4e7eb' } }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#a1a7b8' },
+                            grid: { color: chartColors.border }
+                        },
+                        x: {
+                            ticks: { color: '#a1a7b8' },
+                            grid: { color: chartColors.border }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Source IP Distribution
+        function updateSourceIPChart() {
+            destroyChart('sourceIp');
+
+            const srcData = {};
+            allThreats.forEach(t => {
+                srcData[t.src_ip] = (srcData[t.src_ip] || 0) + 1;
+            });
+
+            const topSrc = Object.entries(srcData).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            const srcIps = topSrc.map(([ip]) => ip);
+            const srcCounts = topSrc.map(([, count]) => count);
+
+            const ctx = document.getElementById('sourceIpChart').getContext('2d');
+            chartInstances['sourceIp'] = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: srcIps,
+                    datasets: [{
+                        label: 'Threat Count',
+                        data: srcCounts,
+                        borderColor: chartColors.accent,
+                        backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: chartColors.accent
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#e4e7eb' } }
+                    },
+                    scales: {
+                        r: {
+                            ticks: { color: '#a1a7b8' },
+                            grid: { color: chartColors.border }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Destination IP Distribution
+        function updateDestIPChart() {
+            destroyChart('destIp');
+
+            const dstData = {};
+            allThreats.forEach(t => {
+                dstData[t.dst_ip] = (dstData[t.dst_ip] || 0) + 1;
+            });
+
+            const topDst = Object.entries(dstData).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            const dstIps = topDst.map(([ip]) => ip);
+            const dstCounts = topDst.map(([, count]) => count);
+
+            const ctx = document.getElementById('destIpChart').getContext('2d');
+            chartInstances['destIp'] = new Chart(ctx, {
+                type: 'polarArea',
+                data: {
+                    labels: dstIps,
+                    datasets: [{
+                        data: dstCounts,
+                        backgroundColor: [
+                            'rgba(252, 165, 165, 0.8)',
+                            'rgba(254, 202, 202, 0.8)',
+                            'rgba(252, 211, 77, 0.8)',
+                            'rgba(134, 239, 172, 0.8)',
+                            'rgba(0, 212, 255, 0.8)'
+                        ],
+                        borderColor: chartColors.border,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#e4e7eb' } }
+                    }
+                }
+            });
+        }
+
+        // Threat Status Breakdown
+        function updateStatusChart() {
+            destroyChart('status');
+
+            const statusData = {
+                new: allThreats.filter(t => t.status === 'new').length,
+                reviewed: allThreats.filter(t => t.status === 'reviewed').length,
+                resolved: allThreats.filter(t => t.status === 'resolved').length,
+            };
+
+            const ctx = document.getElementById('statusChart').getContext('2d');
+            chartInstances['status'] = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['New', 'Reviewed', 'Resolved'],
+                    datasets: [{
+                        data: [statusData.new, statusData.reviewed, statusData.resolved],
+                        backgroundColor: ['#fca5a5', '#fcd34d', '#86efac'],
+                        borderColor: chartColors.border,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#e4e7eb', font: { size: 12 } } }
+                    }
+                }
+            });
+        }
+
+        function filterBySeverity(severity) {
+            currentFilter = severity;
+            document.querySelectorAll('.filter-group .btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderThreats();
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', loadSampleData);
+    </script>
 </body>
 </html>
